@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Об авторе</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1C1E22;
+            --panel: #26292E;
+            --panel-alt: #2E3238;
+            --border: #3A3E44;
+            --text: #EDEBE6;
+            --text-muted: #9BA1A8;
+            --accent: #E8A33D;
+            --accent-dark: #B87B1F;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+            padding: 40px 0;
+        }
+
+        .centered-form {
+            background: var(--panel);
+            border-radius: 10px;
+            padding: 40px 36px;
+            width: 600px;
+            max-width: 90vw;
+            border-top: 3px solid var(--accent);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .centered-header {
+            text-align: center;
+            font-family: 'Oswald', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-size: 22px;
+            margin: 0 0 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .auth-form a {
+            display: block;
+            text-align: center;
+            margin-top: 24px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .auth-form a:hover {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+<div class="centered-form">
+    <h1 class="centered-header">Об авторе</h1>
+    <label>Ерхан Михаил Ионович</label>
+    <label>Учебная группа Пи22-1в</label>
+    <label> <br>
+        В процессе выполнения проекта были использованы современные технологии, обеспечивающие разработку надёжной и функциональной информационно-справочной системы: <br>
+        <br>
+        1. Java и Spring Boot <br>
+        - Реализация серверной части проекта с использованием Spring Boot. <br>
+        - Настройка REST API для взаимодействия клиента и сервера. <br>
+        - Организация работы с базой данных через ORM (Hibernate). <br> <br>
+        2. Базы данных <br>
+        - Проектирование структуры базы данных для хранения информации о клиентах, запчастях и заказах. <br>
+        - Создание SQL-запросов для выборки и обработки данных. <br>
+        - Интеграция базы данных с серверной частью приложения. <br> <br>
+        3. HTML, CSS, JavaScript <br>
+        - Разработка пользовательского интерфейса с использованием адаптивной верстки и современных CSS-фреймворков (Bootstrap). <br>
+        - Добавление интерактивных элементов через JavaScript и AJAX для повышения удобства взаимодействия с системой. <br>
+        - Работа с формами и модальными окнами для обработки данных. <br>
+        <br>
+        Этот опыт позволил не только освоить указанные технологии, но и получить практические навыки проектирования клиент-серверных приложений, работы с базами данных и создания удобного веб-интерфейса. <br>
+    </label>
+    <br>
+    <form class="auth-form">
+        <a href="/index">На главную</a>
+    </form>
+</div>
+</body>
+</html>

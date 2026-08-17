@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Доступ запрещён</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1C1E22;
+            --panel: #26292E;
+            --panel-alt: #2E3238;
+            --text: #EDEBE6;
+            --text-muted: #9BA1A8;
+            --accent: #E8A33D;
+            --accent-dark: #B87B1F;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg);
+            font-family: 'Inter', system-ui, sans-serif;
+            color: var(--text);
+        }
+
+        .code {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 700;
+            font-size: 120px;
+            line-height: 1;
+            color: var(--panel-alt);
+            -webkit-text-stroke: 2px var(--accent);
+            letter-spacing: 0.02em;
+        }
+
+        .stripe {
+            width: 96px;
+            height: 5px;
+            margin: 20px 0 24px;
+            background: repeating-linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent) 6px,
+                    var(--panel-alt) 6px,
+                    var(--panel-alt) 12px
+            );
+            border-radius: 3px;
+        }
+
+        h1 {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-size: 20px;
+            margin: 0 0 10px;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin: 0 0 28px;
+            text-align: center;
+            max-width: 360px;
+        }
+
+        a {
+            display: inline-block;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: #1C1E22;
+            background-color: var(--accent);
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        a:hover {
+            background-color: var(--accent-dark);
+        }
+    </style>
+</head>
+<body>
+<div class="code">403</div>
+<div class="stripe"></div>
+<h1>Доступ запрещён</h1>
+<p>У вас недостаточно прав для просмотра этой страницы.</p>
+<a href="/">На главную</a>
+</body>
+</html>

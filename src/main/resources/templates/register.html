@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Регистрация</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1C1E22;
+            --panel: #26292E;
+            --panel-alt: #2E3238;
+            --border: #3A3E44;
+            --text: #EDEBE6;
+            --text-muted: #9BA1A8;
+            --accent: #E8A33D;
+            --accent-dark: #B87B1F;
+            --danger: #C4553C;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        .centered-form {
+            background: var(--panel);
+            border-radius: 10px;
+            padding: 40px 36px;
+            width: 380px;
+            border-top: 3px solid var(--accent);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .centered-header {
+            text-align: center;
+            font-family: 'Oswald', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-size: 22px;
+            margin: 0 0 24px;
+        }
+
+        .auth-form label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .auth-form input[type="text"],
+        .auth-form input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--panel-alt);
+            color: var(--text);
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .auth-form input:focus {
+            border-color: var(--accent);
+        }
+
+        .auth-form button {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent);
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: #1C1E22;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .auth-form button:hover {
+            background-color: var(--accent-dark);
+        }
+
+        .auth-form a {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .auth-form a:hover {
+            color: var(--accent);
+        }
+
+        .error-message {
+            display: block;
+            width: 100%;
+            text-align: center;
+            font-size: 13px;
+            color: var(--danger);
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+<div class="centered-form">
+    <form class="auth-form" action="#" th:action="@{/register}" th:object="${user}" method="post">
+        <h1 class="centered-header">Регистрация</h1>
+        <label for="userName">Имя пользователя:</label>
+        <input type="text" id="userName" name="userName" th:field="*{userName}" required>
+        <label for="password">Пароль:</label>
+        <input type="password" id="password" name="password" th:field="*{password}" required>
+        <button type="submit">Зарегистрироваться</button>
+        <a href="/login">Авторизоваться</a>
+        <div class="error-message" th:if="${error}">
+            Такой пользователь уже существует
+        </div>
+    </form>
+</div>
+</body>
+</html>

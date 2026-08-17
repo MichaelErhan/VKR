@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Гистограмма доставок запчастей по дням</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1C1E22;
+            --panel: #26292E;
+            --panel-alt: #2E3238;
+            --border: #3A3E44;
+            --text: #EDEBE6;
+            --text-muted: #9BA1A8;
+            --accent: #E8A33D;
+            --accent-dark: #B87B1F;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        nav {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 18px 0;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--text);
+            background-color: var(--panel-alt);
+        }
+
+        h1 {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            margin-top: 40px;
+            font-size: 22px;
+            text-align: center;
+            position: relative;
+            padding-bottom: 16px;
+        }
+
+        h1::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 72px;
+            height: 4px;
+            background: repeating-linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent) 6px,
+                    var(--panel-alt) 6px,
+                    var(--panel-alt) 12px
+            );
+            border-radius: 2px;
+        }
+
+        h2 {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 500;
+            font-size: 17px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        #histogramChart {
+            max-width: 90%;
+            margin: 24px auto 0;
+            background: var(--panel);
+            border-radius: 8px;
+            border-top: 3px solid var(--accent);
+            padding: 20px;
+        }
+
+        #result {
+            margin-top: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        input[type="date"] {
+            padding: 10px 12px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            outline: none;
+            width: 260px;
+            margin-top: 16px;
+            background-color: var(--panel);
+            color: var(--text);
+        }
+
+        button {
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: #1C1E22;
+            background-color: var(--accent);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 16px;
+        }
+
+        button:hover {
+            background-color: var(--accent-dark);
+        }
+
+        a.back-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            margin: 24px 0 40px;
+        }
+
+        a.back-link:hover {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="/">Главная</a>
+    <a href="/parts-delivery">Список доставок запчастей</a>
+    <a href="/repairs/">Планирование ремонта</a>
+</nav>
+
+<h1>Гистограмма доставок запчастей по дням</h1>
+
+<canvas id="histogramChart" width="1000" height="450"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script th:inline="javascript">
+    const histogramData = /*[[${histogramData}]]*/ {};
+
+    const labels = Object.keys(histogramData);
+    const data = Object.values(histogramData);
+
+    const ctx = document.getElementById('histogramChart').getContext('2d');
+
+    const histogramChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Количество заказанных запчастей',
+                data: data,
+                backgroundColor: 'rgba(232, 163, 61, 0.25)',
+                borderColor: 'rgba(232, 163, 61, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    suggestedMin: 0,
+                    suggestedMax: Math.max(...data) + 1,
+                    ticks: { color: '#9BA1A8' },
+                    grid: { color: '#3A3E44' }
+                },
+                x: {
+                    ticks: {
+                        autoSkip: true,
+                        maxRotation: 90,
+                        minRotation: 45,
+                        maxTicksLimit: 10,
+                        color: '#9BA1A8'
+                    },
+                    grid: { color: '#3A3E44' }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#EDEBE6' } }
+            }
+        }
+    });
+
+    function countPartsDeliveries() {
+        const inputDate = document.getElementById('partsDeliveryDate').value;
+        const count = histogramData[inputDate] || 0;
+
+        document.getElementById('result').textContent = `Количество доставок на ${inputDate}: ${count}`;
+    }
+</script>
+
+<h2>Узнать количество заказанных запчастей за выбранный день</h2>
+
+<input type="date" id="partsDeliveryDate" required>
+
+<button onclick="countPartsDeliveries()">Посчитать</button>
+
+<div id="result"></div>
+
+<a class="back-link" href="/parts-delivery/admin">← Назад к списку</a>
+
+</body>
+</html>

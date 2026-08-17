@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Управление запчастями</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1C1E22;
+            --panel: #26292E;
+            --panel-alt: #2E3238;
+            --border: #3A3E44;
+            --text: #EDEBE6;
+            --text-muted: #9BA1A8;
+            --accent: #E8A33D;
+            --accent-dark: #B87B1F;
+            --danger: #C4553C;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        header { width: 100%; }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 18px 0;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--text);
+            background-color: var(--panel-alt);
+        }
+
+        h1 {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            margin-top: 40px;
+            font-size: 24px;
+            text-align: center;
+            position: relative;
+            padding-bottom: 16px;
+        }
+
+        h1::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 72px;
+            height: 4px;
+            background: repeating-linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent) 6px,
+                    var(--panel-alt) 6px,
+                    var(--panel-alt) 12px
+            );
+            border-radius: 2px;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        table {
+            width: 92%;
+            max-width: 1200px;
+            margin-top: 20px;
+            border-collapse: collapse;
+            text-align: left;
+            background: var(--panel);
+            border-radius: 6px;
+            overflow: hidden;
+            border-top: 3px solid var(--accent);
+        }
+
+        table th, table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        table th {
+            background-color: var(--panel-alt);
+            font-family: 'Oswald', sans-serif;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        table tr:hover td {
+            background-color: var(--panel-alt);
+        }
+
+        .edit-button, .add-button, .delete-button, .histogram-button, .sort-button {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s, transform 0.15s, opacity 0.2s;
+        }
+
+        .add-button, .histogram-button, .sort-button {
+            background-color: var(--accent);
+            color: #1C1E22;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .add-button:hover, .histogram-button:hover, .sort-button:hover {
+            background-color: var(--accent-dark);
+            transform: translateY(-1px);
+        }
+
+        .edit-button {
+            background-color: var(--panel-alt);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 500;
+            margin: 2px;
+        }
+
+        .delete-button {
+            background-color: var(--danger);
+            color: #fff;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 500;
+            margin: 2px;
+        }
+
+        .edit-button:hover, .delete-button:hover {
+            opacity: 0.85;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content {
+            background-color: var(--panel);
+            margin: 10% auto;
+            padding: 28px;
+            border-radius: 8px;
+            border-top: 3px solid var(--accent);
+            width: 90%;
+            max-width: 480px;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 500;
+            font-size: 19px;
+            margin-top: 0;
+        }
+
+        .modal-content label {
+            display: block;
+            text-align: left;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 12px;
+            margin-bottom: 4px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--panel-alt);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+        }
+
+        .modal-content button {
+            padding: 10px 24px;
+            background-color: var(--accent);
+            color: #1C1E22;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+
+        .modal-content button:hover {
+            background-color: var(--accent-dark);
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            z-index: 100;
+        }
+
+        .user-info .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--panel-alt);
+            border: 2px solid var(--accent);
+            margin-right: 10px;
+        }
+
+        .usernametext {
+            font-size: 15px;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .user-info a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 14px;
+            transition: color 0.2s;
+        }
+
+        .user-info a:hover {
+            color: var(--accent);
+        }
+    </style>
+
+    <script>
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = "block";
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        function fillEditModal(element) {
+            const modal = document.getElementById("editModal");
+
+            modal.querySelector("#editPartsDeliveryId").value = element.getAttribute("data-id");
+            modal.querySelector("#editPartName").value = element.getAttribute("data-part-name");
+            modal.querySelector("#editPartDescription").value = element.getAttribute("data-part-description");
+            modal.querySelector("#editSupplierCity").value = element.getAttribute("data-supplier-city");
+            modal.querySelector("#editShipmentDate").value = element.getAttribute("data-shipment-date");
+            modal.querySelector("#editDeliveryCity").value = element.getAttribute("data-delivery-city");
+            modal.querySelector("#editDeliveryDate").value = element.getAttribute("data-delivery-date");
+
+            showModal("editModal");
+        }
+
+        function confirmDelete(element) {
+            const partsDeliveryId = element.getAttribute("data-id");
+            const deleteForm = document.getElementById("deleteForm");
+
+            deleteForm.action = `/parts-delivery/admin/delete/${partsDeliveryId}`;
+
+            showModal("deleteModal");
+        }
+    </script>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="/">Главная</a>
+        <a href="/repairs/">Планирование ремонта</a>
+        <a href="/admin_panel">Панель администратора</a>
+        <a href="/clients/clients">Панель управления клиентами</a>
+        <a href="/about">Об авторе</a>
+    </nav>
+    <div class="user-info" th:if="${username}">
+        <div class="avatar"></div>
+        <span class="usernametext" th:text="${username}"></span>
+        <a href="/logout"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+    </div>
+</header>
+
+<h1>Административная панель управления запчастями</h1>
+
+<a class="add-button" style="margin: 0.5em 0;" href="#" onclick="showModal('addModal')">Добавить новую доставку</a>
+<p>Всего доставок: <span th:text="${#lists.size(partsDeliveries)}"></span></p>
+
+<a class="histogram-button" style="margin: 0.5em 0;" href="/parts-delivery/admin/histogram">Посмотреть плотность распределения доставок</a>
+
+<form action="/parts-delivery/admin/filter" method="get" style="margin: 0.5em 0;">
+    <label for="searchInput">Введите параметры через запятую:</label>
+    <input type="text" id="searchInput" name="searchInput">
+    <button type="submit">Поиск</button>
+</form>
+
+<a class="sort-button" style="margin: 0.5em 0;" th:href="@{/parts-delivery/admin/sort(dateType='deliveryDate', order=${order == 'asc' ? 'desc' : 'asc'})}">
+    Сортировать по дате доставки
+</a>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Название запчасти</th>
+        <th>Описание запчасти</th>
+        <th>Город поставщика</th>
+        <th>Дата отправки</th>
+        <th>Город доставки</th>
+        <th>Дата доставки</th>
+        <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="partsDeliveryItem : ${partsDeliveries}">
+        <td th:text="${partsDeliveryItem.id}"></td>
+        <td th:text="${partsDeliveryItem.partName}"></td>
+        <td th:text="${partsDeliveryItem.partDescription}"></td>
+        <td th:text="${partsDeliveryItem.supplierCity}"></td>
+        <td th:text="${partsDeliveryItem.shipmentDate}"></td>
+        <td th:text="${partsDeliveryItem.deliveryCity}"></td>
+        <td th:text="${partsDeliveryItem.deliveryDate}"></td>
+        <td>
+            <a class="edit-button" href="#"
+               th:data-id="${partsDeliveryItem.id}"
+               th:data-part-name="${partsDeliveryItem.partName}"
+               th:data-part-description="${partsDeliveryItem.partDescription}"
+               th:data-supplier-city="${partsDeliveryItem.supplierCity}"
+               th:data-shipment-date="${partsDeliveryItem.shipmentDate}"
+               th:data-delivery-city="${partsDeliveryItem.deliveryCity}"
+               th:data-delivery-date="${partsDeliveryItem.deliveryDate}"
+               onclick="fillEditModal(this)">
+                Редактировать
+            </a>
+
+            <a class="delete-button" href="#"
+               th:data-id="${partsDeliveryItem.id}"
+               onclick="confirmDelete(this)">
+                Удалить
+            </a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- Модальное окно для добавления -->
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('addModal')" style="cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
+        <form th:action="@{/parts-delivery/admin/add}" method="post">
+            <h2>Добавить доставку запчастей</h2>
+            <label>Название запчасти:</label>
+            <input type="text" name="partName" required>
+            <label>Описание запчасти:</label>
+            <input type="text" name="partDescription" required>
+            <label>Город поставщика:</label>
+            <input type="text" name="supplierCity" required>
+            <label>Дата отправки:</label>
+            <input type="date" name="shipmentDate" required>
+            <label>Город доставки:</label>
+            <input type="text" name="deliveryCity" required>
+            <label>Дата доставки:</label>
+            <input type="date" name="deliveryDate" required>
+            <button type="submit">Добавить</button>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span onclick="closeModal('editModal')" style="cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
+        <form th:action="@{/parts-delivery/admin/edit}" method="post">
+            <input type="hidden" id="editPartsDeliveryId" name="id">
+            <label>Название запчасти:</label>
+            <input type="text" id="editPartName" name="partName" required>
+            <label>Описание запчасти:</label>
+            <input type="text" id="editPartDescription" name="partDescription" required>
+            <label>Город поставщика:</label>
+            <input type="text" id="editSupplierCity" name="supplierCity" required>
+            <label>Дата отправки:</label>
+            <input type="date" id="editShipmentDate" name="shipmentDate" required>
+            <label>Город доставки:</label>
+            <input type="text" id="editDeliveryCity" name="deliveryCity" required>
+            <label>Дата доставки:</label>
+            <input type="date" id="editDeliveryDate" name="deliveryDate" required>
+            <button type="submit">Сохранить изменения</button>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно для подтверждения удаления -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <span onclick="closeModal('deleteModal')" style="cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
+        <p>Вы уверены, что хотите удалить эту запись?</p>
+        <form id="deleteForm" method="post">
+            <button type="submit">Удалить</button>
+            <button type="button" onclick="closeModal('deleteModal')">Отмена</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
