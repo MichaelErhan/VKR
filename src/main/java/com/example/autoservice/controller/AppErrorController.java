@@ -26,11 +26,9 @@ public class AppErrorController implements ErrorController {
             }
         }
 
-        // Любая другая непредвиденная ошибка — по умолчанию показываем 404
         return "error/404";
     }
 
-    // Оставляем прямые ссылки для ручного просмотра страниц
     @GetMapping("/error/403")
     public String accessDenied() {
         return "error/403";
