@@ -412,8 +412,8 @@
 <a class="add-button" style="margin: 0.5em 0;" href="#" onclick="openAddModal()">Добавить заказ-наряд</a>
 
 <form action="/repairs/admin/filter" method="get">
-    <label for="title">Марка и гос. номер:</label>
-    <input type="text" id="title" name="title" placeholder="Введите марку и гос. номер">
+    <label for="client">Клиент или автомобиль:</label>
+    <input type="text" id="client" name="client" placeholder="ФИО, марка или гос. номер">
 
     <label for="publicationDate">Дата записи:</label>
     <input type="date" id="publicationDate" name="publicationDate">
@@ -436,7 +436,8 @@
     <thead>
     <tr>
         <th>ID</th>
-        <th>Марка и гос. номер</th>
+        <th>Клиент</th>
+        <th>Автомобиль</th>
         <th>Дата записи</th>
         <th>Автор</th>
         <th>Оказываемые услуги</th>
@@ -448,7 +449,8 @@
     <tbody>
     <tr th:each="repairBooking : ${repairBookings}">
         <td th:text="${repairBooking.id}"></td>
-        <td th:text="${repairBooking.title}"></td>
+        <td th:text="${repairBooking.client != null ? repairBooking.client.fullName : '—'}"></td>
+        <td th:text="${repairBooking.client != null ? repairBooking.client.carBrandAndPlate : '—'}"></td>
         <td th:text="${repairBooking.publicationDate}"></td>
         <td th:text="${repairBooking.author.userName}"></td>
         <td th:text="${repairBooking.servicesText}"></td>
@@ -457,7 +459,7 @@
         <td>
             <a class="edit-button" href="#"
                th:data-id="${repairBooking.id}"
-               th:data-title="${repairBooking.title}"
+               th:data-client-id="${repairBooking.client != null ? repairBooking.client.id : ''}"
                th:data-publication-date="${repairBooking.publicationDate}"
                th:data-cost="${repairBooking.cost}"
                th:data-mechanic-id="${repairBooking.mechanic != null ? repairBooking.mechanic.id : ''}"
@@ -483,8 +485,13 @@
         <form th:action="@{/repairs/add}" method="post">
             <h1 class="centered-header">Новый заказ-наряд</h1>
 
-            <label for="titleAdd">Марка и гос. номер:</label>
-            <input type="text" id="titleAdd" name="title" required>
+            <label for="clientAdd">Клиент и автомобиль:</label>
+            <select id="clientAdd" name="clientId" required>
+                <option value="" disabled selected>Выберите клиента</option>
+                <option th:each="client : ${clients}" th:value="${client.id}"
+                        th:text="${client.fullName + ' — ' + client.carBrandAndPlate}"></option>
+            </select>
+            <p class="hint" th:if="${#lists.isEmpty(clients)}">Справочник клиентов пуст. Сначала добавьте клиента в разделе «Клиенты».</p>
 
             <label for="publicationDateAdd">Дата записи:</label>
             <input type="date" id="publicationDateAdd" name="publicationDate" required>
@@ -523,8 +530,12 @@
             <h1 class="centered-header">Редактирование заказ-наряда</h1>
             <input type="hidden" id="editRepairBookingId" name="id"/>
 
-            <label for="titleEdit">Марка и гос. номер:</label>
-            <input type="text" id="titleEdit" name="title" required>
+            <label for="clientEdit">Клиент и автомобиль:</label>
+            <select id="clientEdit" name="clientId" required>
+                <option value="" disabled>Выберите клиента</option>
+                <option th:each="client : ${clients}" th:value="${client.id}"
+                        th:text="${client.fullName + ' — ' + client.carBrandAndPlate}"></option>
+            </select>
 
             <label for="publicationDateEdit">Дата записи:</label>
             <input type="date" id="publicationDateEdit" name="publicationDate" required>
@@ -597,7 +608,7 @@
         const modal = document.getElementById("editModal");
 
         modal.querySelector("#editRepairBookingId").value = element.getAttribute("data-id");
-        modal.querySelector("#titleEdit").value = element.getAttribute("data-title");
+        modal.querySelector("#clientEdit").value = element.getAttribute("data-client-id") || "";
         modal.querySelector("#publicationDateEdit").value = element.getAttribute("data-publication-date");
         modal.querySelector("#mechanicEdit").value = element.getAttribute("data-mechanic-id") || "";
         modal.querySelector("#costEdit").value = element.getAttribute("data-cost") || "";

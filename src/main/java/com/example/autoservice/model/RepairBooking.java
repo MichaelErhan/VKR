@@ -19,7 +19,9 @@ public class RepairBooking {
     private Long id;
 
     @Getter
-    private String title;
+    @ManyToOne
+    @JoinColumn(name = "client_id")
+    private Clients client;
 
     @Getter
     private LocalDate publicationDate;

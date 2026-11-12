@@ -9,6 +9,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -67,8 +69,13 @@ public class ClientsController {
     }
 
     @PostMapping("/delete/{id}")
-    public String deleteClients(@PathVariable Long id) {
-        clientsService.deleteClients(id);
+    public String deleteClients(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            clientsService.deleteClients(id);
+        } catch (DataIntegrityViolationException e) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Клиента нельзя удалить: он указан в заказ-нарядах.");
+        }
         return "redirect:/clients/clients";
     }
 
