@@ -329,13 +329,7 @@
 <body>
 
 <header>
-    <nav>
-        <a href="/">Главная</a>
-        <a href="/parts-delivery">Список доставок запчастей</a>
-        <a href="/admin_panel">Панель администратора</a>
-        <a href="/clients/clients">Панель управления клиентами</a>
-        <a href="/about">Об авторе</a>
-    </nav>
+    <nav th:replace="~{fragments/nav :: nav}"></nav>
     <div class="user-info" th:if="${username}">
         <div class="avatar"></div>
         <span class="usernametext" th:text="${username}"></span>

@@ -34,7 +34,7 @@ public class RepairBookingService {
         repairBookingRepository.deleteById(id);
     }
 
-    public List<RepairBooking> searchRepairBookings(String title, String publicationDate, String author, String content, String mechanicName) {
-        return repairBookingRepository.searchByQuery(title, publicationDate, author, content, mechanicName);
+    public List<RepairBooking> searchRepairBookings(String title, String publicationDate, String author, String serviceName, String mechanicName) {
+        return repairBookingRepository.searchByQuery(title, publicationDate, author, serviceName, mechanicName);
     }
 }

@@ -156,11 +156,7 @@
     </style>
 </head>
 <body>
-<nav>
-    <a href="/">Главная</a>
-    <a href="/parts-delivery">Список доставок запчастей</a>
-    <a href="/repairs/">Планирование ремонта</a>
-</nav>
+<nav th:replace="~{fragments/nav :: nav}"></nav>
 
 <h1>Гистограмма доставок запчастей по дням</h1>
 

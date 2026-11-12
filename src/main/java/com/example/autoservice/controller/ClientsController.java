@@ -4,7 +4,6 @@ import com.example.autoservice.model.Clients;
 import com.example.autoservice.model.User;
 import com.example.autoservice.service.ClientsService;
 import com.example.autoservice.service.UserService;
-import com.example.autoservice.util.Role;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -89,18 +88,7 @@ public class ClientsController {
     }
 
     @GetMapping("/")
-    public String showClientsHome(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-            User user = userService.findUserByUserName(username).orElse(null);
-            if (user != null && user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.MODERATOR)) {
-                return "redirect:/clients/clients";
-            }
-            model.addAttribute("username", user.getUserName());
-        }
-        List<Clients> clients = clientsService.findAllClients();
-        model.addAttribute("clients", clients);
-        return "clients/clients";
+    public String showClientsHome() {
+        return "redirect:/clients/clients";
     }
 }

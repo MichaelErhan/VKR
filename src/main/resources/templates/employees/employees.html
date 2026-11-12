@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Сотрудники</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1C1E22;
+            --panel: #26292E;
+            --panel-alt: #2E3238;
+            --border: #3A3E44;
+            --text: #EDEBE6;
+            --text-muted: #9BA1A8;
+            --accent: #E8A33D;
+            --accent-dark: #B87B1F;
+            --danger: #C4553C;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        header { width: 100%; }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 18px 0;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: color 0.2s, background-color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--text);
+            background-color: var(--panel-alt);
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            z-index: 100;
+        }
+
+        .user-info .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--panel-alt);
+            border: 2px solid var(--accent);
+            margin-right: 10px;
+        }
+
+        .usernametext {
+            font-size: 15px;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .user-info a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 14px;
+            transition: color 0.2s;
+        }
+
+        .user-info a:hover {
+            color: var(--accent);
+        }
+
+        h1 {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            margin-top: 40px;
+            font-size: 24px;
+            text-align: center;
+            position: relative;
+            padding-bottom: 16px;
+        }
+
+        h1::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 72px;
+            height: 4px;
+            background: repeating-linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent) 6px,
+                    var(--panel-alt) 6px,
+                    var(--panel-alt) 12px
+            );
+            border-radius: 2px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 420px;
+            padding: 0 24px;
+        }
+
+        form label {
+            align-self: flex-start;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: -4px;
+        }
+
+        form input, form textarea {
+            padding: 10px 12px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            outline: none;
+            width: 100%;
+            background-color: var(--panel);
+            color: var(--text);
+            transition: border-color 0.2s;
+        }
+
+        form input:focus, form textarea:focus {
+            border-color: var(--accent);
+        }
+
+        form button {
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: #1C1E22;
+            background-color: var(--accent);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        form button:hover {
+            background-color: var(--accent-dark);
+        }
+
+        table {
+            width: 90%;
+            max-width: 1100px;
+            margin-top: 30px;
+            border-collapse: collapse;
+            text-align: left;
+            background: var(--panel);
+            border-radius: 6px;
+            overflow: hidden;
+            border-top: 3px solid var(--accent);
+        }
+
+        table th, table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        table th {
+            background-color: var(--panel-alt);
+            font-family: 'Oswald', sans-serif;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        table tr:hover td {
+            background-color: var(--panel-alt);
+        }
+
+        p {
+            margin-top: 20px;
+            font-size: 15px;
+            color: var(--text-muted);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.25s;
+        }
+
+        .modal-content {
+            background-color: var(--panel);
+            margin: 12% auto;
+            padding: 28px;
+            border-radius: 8px;
+            border-top: 3px solid var(--accent);
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            animation: slideIn 0.3s;
+            text-align: center;
+        }
+
+        .modal-content form {
+            padding: 0;
+            max-width: none;
+        }
+
+        .modal-content h1 {
+            font-size: 20px;
+            margin-top: 0;
+        }
+
+        .close {
+            color: var(--text-muted);
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+            float: right;
+        }
+
+        .close:hover {
+            color: var(--accent);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .add-button {
+            display: inline-block;
+            background-color: var(--accent);
+            color: #1C1E22;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s, transform 0.15s;
+            margin-top: 20px;
+        }
+
+        .add-button:hover {
+            background-color: var(--accent-dark);
+            transform: translateY(-1px);
+        }
+
+        .edit-button, .delete-button {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s;
+            margin: 2px;
+        }
+
+        .edit-button {
+            background-color: var(--panel-alt);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .delete-button {
+            background-color: var(--danger);
+            color: #fff;
+        }
+
+        .edit-button:hover, .delete-button:hover {
+            opacity: 0.85;
+        }
+
+        .alert-error {
+            width: 90%;
+            max-width: 1100px;
+            margin-top: 20px;
+            padding: 12px 16px;
+            border-radius: 4px;
+            background: rgba(196, 85, 60, 0.15);
+            border: 1px solid var(--danger);
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-30px); }
+            to { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav th:replace="~{fragments/nav :: nav}"></nav>
+    <div class="user-info" th:if="${username}">
+        <div class="avatar"></div>
+        <span class="usernametext" th:text="${username}"></span>
+        <a href="/logout"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+    </div>
+</header>
+
+<h1>Сотрудники</h1>
+
+<a class="add-button" style="margin: 0.5em 0;" href="#" onclick="showModal('addModal')">Добавить сотрудника</a>
+<p>Всего сотрудников: <span th:text="${#lists.size(employees)}"></span></p>
+
+<div class="alert-error" th:if="${error}" th:text="${error}"></div>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>ФИО</th>
+        <th>Должность</th>
+        <th>Телефон</th>
+        <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="employee : ${employees}">
+        <td th:text="${employee.id}"></td>
+        <td th:text="${employee.fullName}"></td>
+        <td th:text="${employee.position}"></td>
+        <td th:text="${employee.phoneNumber}"></td>
+        <td>
+            <a class="edit-button" href="#"
+               th:data-id="${employee.id}"
+               th:data-full-name="${employee.fullName}"
+               th:data-position="${employee.position}"
+               th:data-phone-number="${employee.phoneNumber}"
+               onclick="fillEditModal(this)">
+                Редактировать
+            </a>
+            <a class="delete-button" href="#" th:data-id="${employee.id}" onclick="confirmDelete(this)">
+                Удалить
+            </a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('addModal')">&times;</span>
+        <form th:action="@{/employees/add}" method="post">
+            <h1 class="centered-header">Добавить сотрудника</h1>
+            <label for="fullNameAdd">ФИО:</label>
+            <input type="text" id="fullNameAdd" name="fullName" required>
+            <label for="positionAdd">Должность:</label>
+            <input type="text" id="positionAdd" name="position">
+            <label for="phoneNumberAdd">Телефон:</label>
+            <input type="text" id="phoneNumberAdd" name="phoneNumber">
+            <button type="submit">Добавить</button>
+        </form>
+    </div>
+</div>
+
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('editModal')">&times;</span>
+        <form th:action="@{/employees/edit}" method="post">
+            <h1 class="centered-header">Редактирование</h1>
+            <input type="hidden" id="idEdit" name="id">
+            <label for="fullNameEdit">ФИО:</label>
+            <input type="text" id="fullNameEdit" name="fullName" required>
+            <label for="positionEdit">Должность:</label>
+            <input type="text" id="positionEdit" name="position">
+            <label for="phoneNumberEdit">Телефон:</label>
+            <input type="text" id="phoneNumberEdit" name="phoneNumber">
+            <button type="submit">Сохранить изменения</button>
+        </form>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('deleteModal')">&times;</span>
+        <p>Вы уверены, что хотите удалить этого сотрудника?</p>
+        <form id="deleteForm" method="post">
+            <div class="modal-actions">
+                <button type="submit">Удалить</button>
+                <button type="button" onclick="closeModal('deleteModal')">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showModal(modalId) {
+        document.getElementById(modalId).style.display = "block";
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+    }
+
+    function fillEditModal(element) {
+        const modal = document.getElementById("editModal");
+        modal.querySelector("#idEdit").value = element.getAttribute("data-id");
+        modal.querySelector("#fullNameEdit").value = element.getAttribute("data-full-name") || "";
+        modal.querySelector("#positionEdit").value = element.getAttribute("data-position") || "";
+        modal.querySelector("#phoneNumberEdit").value = element.getAttribute("data-phone-number") || "";
+        showModal("editModal");
+    }
+
+    function confirmDelete(element) {
+        document.getElementById("deleteForm").action = "/employees/delete/" + element.getAttribute("data-id");
+        showModal("deleteModal");
+    }
+</script>
+</body>
+</html>

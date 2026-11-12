@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<nav th:fragment="nav">
+    <a href="/">Главная</a>
+    <a href="/parts-delivery">Запчасти</a>
+    <a href="/repairs/">Заказ-наряды</a>
+    <a href="/clients/clients">Клиенты</a>
+    <a href="/employees">Сотрудники</a>
+    <a href="/services">Услуги</a>
+    <a href="/admin_panel" sec:authorize="hasRole('ADMIN')">Панель администратора</a>
+</nav>
+</body>
+</html>

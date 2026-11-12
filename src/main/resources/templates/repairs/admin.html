@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Административная панель планирования ремонта</title>
+    <title>Заказ-наряды</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -330,18 +330,76 @@
             from { transform: translateY(-30px); }
             to { transform: translateY(0); }
         }
+
+        select {
+            padding: 10px 12px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            width: 100%;
+            background-color: var(--panel);
+            color: var(--text);
+        }
+
+        .check-list {
+            align-self: stretch;
+            max-height: 190px;
+            overflow-y: auto;
+            text-align: left;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--panel-alt);
+            padding: 6px 10px;
+        }
+
+        form label.check-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+            padding: 6px 0;
+            font-size: 14px;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        form label.check-item input {
+            width: auto;
+            accent-color: var(--accent);
+        }
+
+        form label.check-item em {
+            margin-left: auto;
+            font-style: normal;
+            color: var(--text-muted);
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .alert-error {
+            width: 90%;
+            max-width: 1100px;
+            margin-top: 20px;
+            padding: 12px 16px;
+            border-radius: 4px;
+            background: rgba(196, 85, 60, 0.15);
+            border: 1px solid var(--danger);
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .hint {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 4px 0 0;
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <nav>
-        <a href="/">Главная</a>
-        <a href="/parts-delivery">Список доставок запчастей</a>
-        <a href="/admin_panel">Панель администратора</a>
-        <a href="/clients/clients">Панель управления клиентами</a>
-        <a href="/about">Об авторе</a>
-    </nav>
+    <nav th:replace="~{fragments/nav :: nav}"></nav>
     <div class="user-info" th:if="${username}">
         <div class="avatar"></div>
         <span class="usernametext" th:text="${username}"></span>
@@ -349,28 +407,30 @@
     </div>
 </header>
 
-<h1>Административная панель планирования ремонта</h1>
+<h1>Заказ-наряды</h1>
 
-<a class="add-button" style="margin: 0.5em 0;" href="#" onclick="showModal('addModal')">Добавить новую запись</a>
+<a class="add-button" style="margin: 0.5em 0;" href="#" onclick="openAddModal()">Добавить заказ-наряд</a>
 
 <form action="/repairs/admin/filter" method="get">
     <label for="title">Марка и гос. номер:</label>
     <input type="text" id="title" name="title" placeholder="Введите марку и гос. номер">
 
     <label for="publicationDate">Дата записи:</label>
-    <input type="Date" id="publicationDate" name="publicationDate">
+    <input type="date" id="publicationDate" name="publicationDate">
 
     <label for="author">Автор:</label>
     <input type="text" id="author" name="author" placeholder="Введите имя автора">
 
-    <label for="content">Оказываемые услуги:</label>
-    <textarea id="content" name="content" placeholder="Введите оказываемые услуги"></textarea>
+    <label for="serviceName">Оказываемая услуга:</label>
+    <input type="text" id="serviceName" name="serviceName" placeholder="Введите название услуги">
 
-    <label for="mechanicName">Имя специалиста:</label>
-    <input type="text" id="mechanicName" name="mechanicName" placeholder="Введите имя специалиста">
+    <label for="mechanicName">Механик:</label>
+    <input type="text" id="mechanicName" name="mechanicName" placeholder="Введите ФИО механика">
 
     <button type="submit">Найти</button>
 </form>
+
+<div class="alert-error" th:if="${error}" th:text="${error}"></div>
 
 <table>
     <thead>
@@ -380,7 +440,8 @@
         <th>Дата записи</th>
         <th>Автор</th>
         <th>Оказываемые услуги</th>
-        <th>Имя специалиста</th>
+        <th>Механик</th>
+        <th>Стоимость</th>
         <th>Действия</th>
     </tr>
     </thead>
@@ -390,16 +451,17 @@
         <td th:text="${repairBooking.title}"></td>
         <td th:text="${repairBooking.publicationDate}"></td>
         <td th:text="${repairBooking.author.userName}"></td>
-        <td th:text="${repairBooking.content}"></td>
-        <td th:text="${repairBooking.mechanicName}"></td>
+        <td th:text="${repairBooking.servicesText}"></td>
+        <td th:text="${repairBooking.mechanic != null ? repairBooking.mechanic.fullName : '—'}"></td>
+        <td th:text="${repairBooking.cost != null ? #numbers.formatDecimal(repairBooking.cost, 1, 'WHITESPACE', 2, 'COMMA') + ' ₽' : '—'}"></td>
         <td>
             <a class="edit-button" href="#"
                th:data-id="${repairBooking.id}"
                th:data-title="${repairBooking.title}"
-               th:data-publicationDate="${repairBooking.publicationDate}"
-               th:data-userName="${repairBooking.author.userName}"
-               th:data-content="${repairBooking.content}"
-               th:data-mechanic-name="${repairBooking.mechanicName}"
+               th:data-publication-date="${repairBooking.publicationDate}"
+               th:data-cost="${repairBooking.cost}"
+               th:data-mechanic-id="${repairBooking.mechanic != null ? repairBooking.mechanic.id : ''}"
+               th:data-service-ids="${repairBooking.serviceIdsText}"
                onclick="fillEditModal(this)">
                 Редактировать
             </a>
@@ -419,15 +481,34 @@
     <div class="modal-content">
         <span class="close" onclick="closeModal('addModal')">&times;</span>
         <form th:action="@{/repairs/add}" method="post">
-            <h1 class="centered-header">Добавить новую запись</h1>
-            <label for="title">Марка и гос. номер:</label>
+            <h1 class="centered-header">Новый заказ-наряд</h1>
+
+            <label for="titleAdd">Марка и гос. номер:</label>
             <input type="text" id="titleAdd" name="title" required>
-            <label for="publicationDate">Дата записи:</label>
+
+            <label for="publicationDateAdd">Дата записи:</label>
             <input type="date" id="publicationDateAdd" name="publicationDate" required>
-            <label for="content">Оказываемые услуги:</label>
-            <textarea id="contentAdd" name="content" required></textarea>
-            <label for="mechanicName">Имя специалиста:</label>
-            <textarea id="mechanicNameAdd" name="mechanicName" required></textarea>
+
+            <label for="mechanicAdd">Механик:</label>
+            <select id="mechanicAdd" name="mechanicId" required>
+                <option value="" disabled selected>Выберите сотрудника</option>
+                <option th:each="employee : ${employees}" th:value="${employee.id}" th:text="${employee.fullName}"></option>
+            </select>
+
+            <label>Оказываемые услуги:</label>
+            <div class="check-list">
+                <label class="check-item" th:each="serviceItem : ${services}">
+                    <input type="checkbox" name="serviceIds" th:value="${serviceItem.id}"
+                           th:data-price="${serviceItem.price}" onchange="recalcCost('addModal')">
+                    <span th:text="${serviceItem.name}"></span>
+                    <em th:text="${#numbers.formatDecimal(serviceItem.price, 1, 'WHITESPACE', 2, 'COMMA') + ' ₽'}"></em>
+                </label>
+                <p class="hint" th:if="${#lists.isEmpty(services)}">Справочник услуг пуст. Сначала добавьте услуги в разделе «Услуги».</p>
+            </div>
+
+            <label for="costAdd">Стоимость, ₽:</label>
+            <input type="number" id="costAdd" name="cost" min="0" step="0.01" required>
+            <p class="hint">Сумма считается по выбранным услугам, при необходимости её можно исправить.</p>
 
             <button type="submit">Добавить</button>
         </form>
@@ -437,19 +518,35 @@
 <!-- Модальное окно для редактирования -->
 <div id="editModal" class="modal">
     <div class="modal-content">
-        <span onclick="closeModal('editModal')" style="cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
+        <span class="close" onclick="closeModal('editModal')">&times;</span>
         <form th:action="@{/repairs/edit}" method="post">
+            <h1 class="centered-header">Редактирование заказ-наряда</h1>
             <input type="hidden" id="editRepairBookingId" name="id"/>
-            <label for="title">Марка и гос. номер:</label>
-            <input type="text" id="titleEdit" name="title" required>
-            <label for="publicationDate">Дата записи:</label>
-            <input type="date" id="publicationDateEdit" name="publicationDate" required>
-            <label for="content">Оказываемые услуги:</label>
-            <textarea id="contentEdit" name="content" required></textarea>
-            <label for="mechanicName">Имя специалиста:</label>
-            <textarea id="mechanicNameEdit" name="mechanicName" required></textarea>
 
-            <input type="hidden" id="userNameEdit" name="userName"/>
+            <label for="titleEdit">Марка и гос. номер:</label>
+            <input type="text" id="titleEdit" name="title" required>
+
+            <label for="publicationDateEdit">Дата записи:</label>
+            <input type="date" id="publicationDateEdit" name="publicationDate" required>
+
+            <label for="mechanicEdit">Механик:</label>
+            <select id="mechanicEdit" name="mechanicId" required>
+                <option value="" disabled>Выберите сотрудника</option>
+                <option th:each="employee : ${employees}" th:value="${employee.id}" th:text="${employee.fullName}"></option>
+            </select>
+
+            <label>Оказываемые услуги:</label>
+            <div class="check-list">
+                <label class="check-item" th:each="serviceItem : ${services}">
+                    <input type="checkbox" name="serviceIds" th:value="${serviceItem.id}"
+                           th:data-price="${serviceItem.price}" onchange="recalcCost('editModal')">
+                    <span th:text="${serviceItem.name}"></span>
+                    <em th:text="${#numbers.formatDecimal(serviceItem.price, 1, 'WHITESPACE', 2, 'COMMA') + ' ₽'}"></em>
+                </label>
+            </div>
+
+            <label for="costEdit">Стоимость, ₽:</label>
+            <input type="number" id="costEdit" name="cost" min="0" step="0.01" required>
 
             <button type="submit">Сохранить изменения</button>
         </form>
@@ -459,52 +556,64 @@
 <!-- Модальное окно для подтверждения удаления -->
 <div id="deleteModal" class="modal">
     <div class="modal-content">
-        <span onclick="closeModal('deleteModal')" style="cursor: pointer; float: right; color: var(--text-muted);">&times;</span>
-        <p>Вы уверены, что хотите удалить эту запись?</p>
+        <span class="close" onclick="closeModal('deleteModal')">&times;</span>
+        <p>Вы уверены, что хотите удалить этот заказ-наряд?</p>
         <form id="deleteForm" method="post">
-            <button type="submit">Удалить</button>
-            <button type="button" onclick="closeModal('deleteModal')">Отмена</button>
+            <div class="modal-actions">
+                <button type="submit">Удалить</button>
+                <button type="button" onclick="closeModal('deleteModal')">Отмена</button>
+            </div>
         </form>
     </div>
 </div>
 
 <script>
-    // Показ модального окна
     function showModal(modalId) {
         document.getElementById(modalId).style.display = "block";
     }
 
-    // Закрытие модального окна
     function closeModal(modalId) {
         document.getElementById(modalId).style.display = "none";
     }
 
-    // Заполнение формы редактирования
+    // Стоимость = сумма цен отмеченных услуг (поле остаётся доступным для правки)
+    function recalcCost(modalId) {
+        const modal = document.getElementById(modalId);
+        let total = 0;
+        modal.querySelectorAll('input[name="serviceIds"]:checked').forEach(function (cb) {
+            total += parseFloat(cb.getAttribute("data-price")) || 0;
+        });
+        modal.querySelector('input[name="cost"]').value = total.toFixed(2);
+    }
+
+    function openAddModal() {
+        const modal = document.getElementById("addModal");
+        modal.querySelectorAll('input[name="serviceIds"]').forEach(function (cb) { cb.checked = false; });
+        modal.querySelector('input[name="cost"]').value = "";
+        showModal("addModal");
+    }
+
     function fillEditModal(element) {
         const modal = document.getElementById("editModal");
-        const userName = element.getAttribute("data-userName");
-
-        // Заполняем скрытые поля
-        modal.querySelector("#userNameEdit").value = userName;
 
         modal.querySelector("#editRepairBookingId").value = element.getAttribute("data-id");
         modal.querySelector("#titleEdit").value = element.getAttribute("data-title");
-        modal.querySelector("#publicationDateEdit").value = element.getAttribute("data-publicationDate");
-        modal.querySelector("#contentEdit").value = element.getAttribute("data-content");
-        modal.querySelector("#mechanicNameEdit").value = element.getAttribute("data-mechanic-name");
+        modal.querySelector("#publicationDateEdit").value = element.getAttribute("data-publication-date");
+        modal.querySelector("#mechanicEdit").value = element.getAttribute("data-mechanic-id") || "";
+        modal.querySelector("#costEdit").value = element.getAttribute("data-cost") || "";
+
+        // Отмечаем услуги, выбранные в этом заказ-наряде
+        const selected = (element.getAttribute("data-service-ids") || "").split(",").filter(Boolean);
+        modal.querySelectorAll('input[name="serviceIds"]').forEach(function (cb) {
+            cb.checked = selected.includes(cb.value);
+        });
 
         showModal("editModal");
     }
 
-    // Открытие модального окна для подтверждения удаления
     function confirmDelete(element) {
         const repairBookingId = element.getAttribute("data-id");
-        const deleteForm = document.getElementById("deleteForm");
-
-        // Устанавливаем URL с ID в атрибут action формы
-        deleteForm.action = `/repairs/delete/${repairBookingId}`;
-
-        // Показываем модальное окно
+        document.getElementById("deleteForm").action = "/repairs/delete/" + repairBookingId;
         showModal("deleteModal");
     }
 </script>

@@ -13,6 +13,12 @@ public class RoleConverter implements AttributeConverter<Role, String> {
 
     @Override
     public Role convertToEntityAttribute(String dbData) {
-        return dbData == null ? null : Role.valueOf(dbData);
+        if (dbData == null) {
+            return null;
+        }
+        if ("MODERATOR".equals(dbData)) {
+            return Role.MANAGER;
+        }
+        return Role.valueOf(dbData);
     }
 }

@@ -19,16 +19,15 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Сохранение нового пользователя с шифрованием пароля
-    public void registerUser(User user) {
-        if (userRepository.findByUserName(user.getUserName()).isPresent()) {
-            System.out.println("User already exists");
+    // Создание учётной записи администратором (пароль хранится в виде хеша BCrypt)
+    public void createUser(String userName, String rawPassword, Role role) {
+        if (userRepository.findByUserName(userName).isPresent()) {
             throw new IllegalArgumentException("Пользователь с таким именем уже существует");
         }
-        user.setPassword(passwordEncoder.encode(user.getPassword())); // Шифруем пароль
-        if (user.getRole() == null) {
-            user.setRole(Role.USER); // Устанавливаем роль по умолчанию
-        }
+        User user = new User();
+        user.setUserName(userName);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setRole(role == null ? Role.MANAGER : role);
         userRepository.save(user);
     }
 

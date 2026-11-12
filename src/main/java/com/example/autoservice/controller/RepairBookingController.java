@@ -1,17 +1,21 @@
 package com.example.autoservice.controller;
 
 import com.example.autoservice.model.RepairBooking;
+import com.example.autoservice.model.ServiceItem;
 import com.example.autoservice.model.User;
+import com.example.autoservice.service.EmployeeService;
 import com.example.autoservice.service.RepairBookingService;
+import com.example.autoservice.service.ServiceItemService;
 import com.example.autoservice.service.UserService;
-import com.example.autoservice.util.Role;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -20,50 +24,80 @@ public class RepairBookingController {
 
     private final RepairBookingService repairBookingService;
     private final UserService userService;
+    private final EmployeeService employeeService;
+    private final ServiceItemService serviceItemService;
 
-    public RepairBookingController(RepairBookingService repairBookingService, UserService userService) {
+    public RepairBookingController(RepairBookingService repairBookingService,
+                                   UserService userService,
+                                   EmployeeService employeeService,
+                                   ServiceItemService serviceItemService) {
         this.repairBookingService = repairBookingService;
         this.userService = userService;
+        this.employeeService = employeeService;
+        this.serviceItemService = serviceItemService;
     }
 
-    @GetMapping("/admin")
-    public String showAdminPanel(Model model) {
+    // Общие данные для страницы заказ-нарядов: имя пользователя и справочники для форм
+    private void fillCommonModel(Model model, List<RepairBooking> repairBookings) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-            User user = userService.findUserByUserName(username).orElse(null);
+            User user = userService.findUserByUserName(authentication.getName()).orElse(null);
             if (user != null) {
                 model.addAttribute("username", user.getUserName());
             }
         }
-        List<RepairBooking> repairBookings = repairBookingService.findAllRepairBookings();
         model.addAttribute("repairBookings", repairBookings);
-        return "repairs/admin";
+        model.addAttribute("employees", employeeService.findAllEmployees());
+        model.addAttribute("services", serviceItemService.findAllServiceItems());
     }
 
-    @GetMapping("/add")
-    public String showAddRepairBookingForm(Model model) {
-        model.addAttribute("repairBooking", new RepairBooking());
+    // Привязка выбранного механика, услуг и стоимости к заказ-наряду
+    private void applySelection(RepairBooking repairBooking, Long mechanicId, List<Long> serviceIds) {
+        repairBooking.setMechanic(mechanicId == null ? null
+                : employeeService.findEmployeeById(mechanicId).orElse(null));
+
+        List<ServiceItem> selected = (serviceIds == null || serviceIds.isEmpty())
+                ? new ArrayList<>()
+                : new ArrayList<>(serviceItemService.findServiceItemsByIds(serviceIds));
+        repairBooking.setServices(selected);
+
+        // Если стоимость не введена, берём сумму цен выбранных услуг
+        if (repairBooking.getCost() == null) {
+            BigDecimal total = selected.stream()
+                    .map(ServiceItem::getPrice)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            repairBooking.setCost(total);
+        }
+    }
+
+    @GetMapping("/")
+    public String showRepairHome() {
         return "redirect:/repairs/admin";
     }
 
+    @GetMapping("/admin")
+    public String showAdminPanel(Model model) {
+        fillCommonModel(model, repairBookingService.findAllRepairBookings());
+        return "repairs/admin";
+    }
+
     @PostMapping("/add")
-    public String addRepairBooking(@ModelAttribute RepairBooking repairBooking, Principal principal) {
+    public String addRepairBooking(@ModelAttribute RepairBooking repairBooking,
+                                   @RequestParam(required = false) Long mechanicId,
+                                   @RequestParam(required = false) List<Long> serviceIds,
+                                   Principal principal) {
+        applySelection(repairBooking, mechanicId, serviceIds);
         repairBooking.setAuthor(userService.findUserByUserName(principal.getName()).orElseThrow());
         repairBookingService.saveRepairBooking(repairBooking);
         return "redirect:/repairs/admin";
     }
 
-    @GetMapping("/edit/{id}")
-    public String showEditRepairBookingForm(@PathVariable Long id, Model model) {
-        RepairBooking repairBooking = repairBookingService.findRepairBookingById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid repair booking Id: " + id));
-        model.addAttribute("repairBooking", repairBooking);
-        return "redirect:/repairs/admin";
-    }
-
     @PostMapping("/edit")
-    public String editRepairBooking(@ModelAttribute RepairBooking repairBooking, Principal principal) {
+    public String editRepairBooking(@ModelAttribute RepairBooking repairBooking,
+                                    @RequestParam(required = false) Long mechanicId,
+                                    @RequestParam(required = false) List<Long> serviceIds,
+                                    Principal principal) {
+        applySelection(repairBooking, mechanicId, serviceIds);
         repairBooking.setAuthor(userService.findUserByUserName(principal.getName()).orElseThrow());
         repairBookingService.saveRepairBooking(repairBooking);
         return "redirect:/repairs/admin";
@@ -75,61 +109,15 @@ public class RepairBookingController {
         return "redirect:/repairs/admin";
     }
 
-    @GetMapping("/")
-    public String showRepairHome(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-            User user = userService.findUserByUserName(username).orElse(null);
-            if (user != null && user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.MODERATOR)) {
-                return "redirect:/repairs/admin";
-            }
-            model.addAttribute("username", user.getUserName());
-        }
-        List<RepairBooking> repairBookings = repairBookingService.findAllRepairBookings();
-        model.addAttribute("repairBookings", repairBookings);
-        return "repairs/repair_home";
-    }
-
     @GetMapping("/admin/filter")
     public String searchRepairBookings(@RequestParam(required = false) String title,
                                        @RequestParam(required = false) String publicationDate,
                                        @RequestParam(required = false) String author,
-                                       @RequestParam(required = false) String content,
+                                       @RequestParam(required = false) String serviceName,
                                        @RequestParam(required = false) String mechanicName,
                                        Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-            User user = userService.findUserByUserName(username).orElse(null);
-            if (user != null) {
-                model.addAttribute("username", user.getUserName());
-            }
-        }
-
-        List<RepairBooking> repairBookings = repairBookingService.searchRepairBookings(title, publicationDate, author, content, mechanicName);
-        model.addAttribute("repairBookings", repairBookings);
+        fillCommonModel(model, repairBookingService.searchRepairBookings(
+                title, publicationDate, author, serviceName, mechanicName));
         return "repairs/admin";
-    }
-
-    @GetMapping("/filter")
-    public String searchRepairBookingsUser(@RequestParam(required = false) String title,
-                                           @RequestParam(required = false) String publicationDate,
-                                           @RequestParam(required = false) String author,
-                                           @RequestParam(required = false) String content,
-                                           @RequestParam(required = false) String mechanicName,
-                                           Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-            User user = userService.findUserByUserName(username).orElse(null);
-            if (user != null) {
-                model.addAttribute("username", user.getUserName());
-            }
-        }
-
-        List<RepairBooking> repairBookings = repairBookingService.searchRepairBookings(title, publicationDate, author, content, mechanicName);
-        model.addAttribute("repairBookings", repairBookings);
-        return "/repairs/repair_home";
     }
 }
